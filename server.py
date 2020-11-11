@@ -9,6 +9,8 @@ A debugger such as "pdb" may be helpful for debugging.
 Read about it online.
 """
 import os
+import random
+import string
   # accessible as a variable in index.html:
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
@@ -109,10 +111,19 @@ def index():
   # example of a database query
   #
   cursor = g.conn.execute("SELECT sid FROM students")
+  sids = []
+  for result in cursor:
+    sids.append(result['sid'])  # can also be accessed using result[0]
+  cursor.close()
+
+  cursor = g.conn.execute("SELECT name FROM students")
   names = []
   for result in cursor:
-    names.append(result['sid'])  # can also be accessed using result[0]
+    names.append(result['name'])  # can also be accessed using result[0]
   cursor.close()
+  
+
+
 
   #
   # Flask uses Jinja templates, which is an extension to HTML where you can
@@ -140,7 +151,7 @@ def index():
   #     <div>{{n}}</div>
   #     {% endfor %}
   #
-  context = dict(data = names)
+  context = dict(data1 = sids, data2 = names)
 
 
   #
@@ -157,9 +168,19 @@ def index():
 # Notice that the function name is another() rather than index()
 # The functions for each app.route need to have different names
 #
-@app.route('/another')
+@app.route('/another', methods=['POST', 'GET'])
 def another():
-  return render_template("another.html")
+
+  print(request.args)
+
+  cursor = g.conn.execute("SELECT pid, content FROM posts")
+  pids = []
+  for result in cursor:
+    pids.append((result['pid'], result['content']))  # can also be accessed using result[0]
+  cursor.close()
+
+  context = dict(data1 = pids)
+  return render_template("another.html", **context)
 
 
 # Example of adding new data to the database
@@ -168,6 +189,15 @@ def add():
   name = request.form['name']
   g.conn.execute('INSERT INTO students(sid) VALUES (%s)', name)
   return redirect('/')
+
+@app.route('/add_post', methods=['POST'])
+def add_post():
+  sid = request.form['sid']
+  content = request.form['content']
+  pid = ''.join(random.sample(string.ascii_letters + string.digits, 8))
+  g.conn.execute('INSERT INTO posts(pid, content, sid) VALUES (%s, %s, %s)', [pid, content, sid] )
+  return redirect('/another')
+
 
 
 @app.route('/login')
