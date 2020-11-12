@@ -168,8 +168,8 @@ def index():
 # Notice that the function name is another() rather than index()
 # The functions for each app.route need to have different names
 #
-@app.route('/another', methods=['POST', 'GET'])
-def another():
+@app.route('/post', methods=['POST', 'GET'])
+def post():
 
   print(request.args)
 
@@ -180,7 +180,7 @@ def another():
   cursor.close()
 
   context = dict(data1 = pids)
-  return render_template("another.html", **context)
+  return render_template("post.html", **context)
 
 
 # Example of adding new data to the database
@@ -192,18 +192,15 @@ def add():
 
 @app.route('/add_post', methods=['POST'])
 def add_post():
-  sid = request.form['sid']
-  content = request.form['content']
-  pid = ''.join(random.sample(string.ascii_letters + string.digits, 8))
-  g.conn.execute('INSERT INTO posts(pid, content, sid) VALUES (%s, %s, %s)', [pid, content, sid] )
-  return redirect('/another')
+  try:
+    sid = request.form['sid']
+    content = request.form['content']
+    pid = ''.join(random.sample(string.ascii_letters + string.digits, 8)) #创立一个随机string来充当pid
+    g.conn.execute('INSERT INTO posts(pid, content, sid) VALUES (%s, %s, %s)', [pid, content, sid] )
+    return redirect('/post')
+  except:
+    return 'sorry man, you need to login first!'
 
-
-
-@app.route('/login')
-def login():
-    abort(401)
-    this_is_never_executed()
 
 
 if __name__ == "__main__":

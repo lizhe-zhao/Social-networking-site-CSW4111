@@ -9,18 +9,13 @@
 
 <body>
   <h1>welcome! this is our project webpage!</h1>
-  <h1>our student id is</h1>
-  <div>{{data1}}</div>
 
-  <div>
-    {% for n in data1 %}
-    <div>{{n}}</div>
-    {% endfor %}
-  </div>
+  <p>this is a social networking sites focus on offline</p>
 
+  <br>
 
-  <h1>our student name is</h1>
-  <div>{{data2}}</div>
+  <p>we have many users and they are:</p>
+ 
 
   <div>
     {% for n in data2 %}
@@ -28,11 +23,18 @@
     {% endfor %}
   </div>
 
-<p><a href="another">Go to the post page</a></p>
+  <br>
+  <p>don't have a account? no worry! join us in a minute!</p>
 
-<form method="POST" action="/add">
-<p>Name of new computer scientist: <input type="text" name="name"> <input type="submit" value="Add"></p>
-</form>
+  <br>
+  <p><a href="login">Go to login page</a></p>
+
+
+  <p><a href="post">Go to the post page</a></p>
+
+  <form method="POST" action="/add">
+  <p>Name of new computer scientist: <input type="text" name="name"> <input type="submit" value="Add"></p>
+  </form>
 
 </body>
 
