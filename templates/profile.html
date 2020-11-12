@@ -1,0 +1,43 @@
+{%extends 'base.html'%}
+
+{%block body%}
+    <h1>this is our event page! you can check posts from other students right here!</h1>
+    <table>
+        <tr>
+            <th>event</th>
+            <th>type</th>
+            <th>description</th>
+        </tr>
+
+        {% for n in data %}
+        <tr>
+            <td>{{n[0]}}</td>
+            <td>{{n[1]}}</td>
+            <td>{{n[2]}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+  
+
+    <p><a href="/">Go to the home page</a></p>
+
+
+<br>
+
+<h1>post your own events right now!</h1>
+<br>
+<div class='form'>
+  <form method="POST" action="/add_post">
+    <p>your sid(student id) is: </p> 
+    <input type="text" name="sid"> 
+    <p> type of your event is: </p> 
+    <input type="text" name="type"> 
+    <p>a short description: </p> 
+    <input type="text" name="description"><input type="submit" value="Add"> 
+  </form>
+</div>
+<br>
+
+</form>
+{% endblock %}

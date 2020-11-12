@@ -14,6 +14,7 @@ import string
   # accessible as a variable in index.html:
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
+from datetime import datetime
 from flask import Flask, request, render_template, g, redirect, Response
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
@@ -110,22 +111,13 @@ def index():
   #
   # example of a database query
   #
-  cursor = g.conn.execute("SELECT sid FROM students")
-  sids = []
-  for result in cursor:
-    sids.append(result['sid'])  # can also be accessed using result[0]
-  cursor.close()
-
   cursor = g.conn.execute("SELECT name FROM students")
-  names = []
+  users = []
   for result in cursor:
-    names.append(result['name'])  # can also be accessed using result[0]
+    users.append(result['name'])  # can also be accessed using result[0]
   cursor.close()
-  
 
-
-
-  #
+  #s
   # Flask uses Jinja templates, which is an extension to HTML where you can
   # pass data to a template and dynamically generate HTML based on the data
   # (you can think of it as simple PHP)
@@ -151,7 +143,7 @@ def index():
   #     <div>{{n}}</div>
   #     {% endfor %}
   #
-  context = dict(data1 = sids, data2 = names)
+  context = dict(data=users)
 
 
   #
@@ -168,39 +160,76 @@ def index():
 # Notice that the function name is another() rather than index()
 # The functions for each app.route need to have different names
 #
-@app.route('/post', methods=['POST', 'GET'])
-def post():
 
-  print(request.args)
 
+@app.route('/allposts', methods=['POST', 'GET'])
+def allposts():
   cursor = g.conn.execute("SELECT pid, content FROM posts")
-  pids = []
+  posts = []
   for result in cursor:
-    pids.append((result['pid'], result['content']))  # can also be accessed using result[0]
+    posts.append((result['pid'], result['content']))  
   cursor.close()
 
-  context = dict(data1 = pids)
-  return render_template("post.html", **context)
+  context = dict(data = posts)
+  return render_template("allposts.html", **context)
 
+@app.route('/events',methods=['POST','GET'])
+def events():
+  cursor = g.conn.execute("SELECT eid, type, description FROM events")
+  events = []
+  for result in cursor:
+    events.append((result['eid'], result['type'],result['description']))  
+  cursor.close()
+
+  context = dict(data = events)
+  return render_template("events.html", **context)
 
 # Example of adding new data to the database
-@app.route('/add', methods=['POST'])
-def add():
-  name = request.form['name']
-  g.conn.execute('INSERT INTO students(sid) VALUES (%s)', name)
-  return redirect('/')
 
-@app.route('/add_post', methods=['POST'])
+@app.route('/add_post', methods=['POST','GET'])
 def add_post():
+  sid = request.form['sid']
+  content = request.form['content']
+  pid = ''.join(random.sample(string.ascii_letters + string.digits, 10))
+  date=datetime.today()
+  time=datetime.now().time()
   try:
-    sid = request.form['sid']
-    content = request.form['content']
-    pid = ''.join(random.sample(string.ascii_letters + string.digits, 8)) #创立一个随机string来充当pid
-    g.conn.execute('INSERT INTO posts(pid, content, sid) VALUES (%s, %s, %s)', [pid, content, sid] )
-    return redirect('/post')
+    if (g.conn.execute('select exists(select sid from students where sid=%s)',(sid))):
+      g.conn.execute('INSERT INTO posts(pid, content, sid, post_date, post_time ) VALUES (%s, %s, %s, %s, %s)', [pid, content, sid, date, time])
+      return redirect('/allposts')
   except:
-    return 'sorry man, you need to login first!'
+    return render_template('login.html')
 
+@app.route('/add_event', methods=['POST','GET'])
+def add_event():
+  sid = request.form['sid']
+  type = request.form['type']
+  description=request.form['description']
+  eid = ''.join(random.sample(string.ascii_letters + string.digits, 10))
+  start_date=request.form['start_date']
+  start_time=request.form['start_time']
+  end_date=request.form['end_date']
+  end_time=request.form['end_time']
+  if g.conn.execute('select exists(select sid from students where sid=%s)',(sid)):
+    g.conn.execute('INSERT INTO events (sid,type,description,eid,start_date,start_time,end_date,end_time) VALUES (?,?,?,?,?,?,?,?)', 
+    (sid,type,description,eid,start_date,start_time,end_date,end_time))
+    return redirect('/events')
+  else:
+    return render_template('login.html')
+
+@app.route('/login',methods=['POST','GET'])
+def login():
+  sid = request.form['sid']
+  name = request.form['name']
+  login = request.form['login']
+  department = request.form['department']
+  school = request.form['school']
+  if g.conn.execute('select exists(select sid from students where sid=%s)',[sid]):
+    return 'You are already a user'
+  else: 
+    g.conn.execute('insert into students values (%s,%s,%s,%s,%s)',[sid,name,department,school,login])
+    return redirect('index.html')
+  
 
 
 if __name__ == "__main__":

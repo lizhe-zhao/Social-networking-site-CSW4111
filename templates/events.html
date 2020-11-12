@@ -1,0 +1,47 @@
+{%extends 'base.html'%}
+
+{%block body%}
+    <h1>this is our event page! you can check posts from other students right here!</h1>
+    <table>
+        <tr>
+            <th>event</th>
+            <th>type</th>
+            <th>description</th>
+        </tr>
+
+        {% for n in data %}
+        <tr>
+            <td>{{n[0]}}</td>
+            <td>{{n[1]}}</td>
+            <td>{{n[2]}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+  
+
+    <p><a href="/">Go to the home page</a></p>
+    <p><a href="login">Go to the login page</a></p>
+
+
+<br>
+
+<h1>post your own events right now!</h1>
+<br>
+<div class='form'>
+  <form method="POST" action="/add_post">
+    <p>your sid(student id) is:<input type="text" name="sid"> </p>
+    <p> type of your event is:<input type="text" name="type"> </p>
+    <p>a short description:<input type="text" name="description"></p>
+    <p>start date (YYYY-MM-DD):<input type="text" name="start_date"></p>
+    <p>start time (HH:MM:SS):<input type="text" name="start_time"></p>
+    <p>end date (YYYY-MM-DD):<input type="text" name="end_date"></p>
+    <p>end time (HH:MM:SS):<input type="text" name="end_time"></p>
+    <p>end time (HH:MM:SS):<input type="text" name="end_time"></p>
+    <input type="submit" value="Add"> 
+  </form>
+</div>
+<br>
+
+</form>
+{% endblock %}
