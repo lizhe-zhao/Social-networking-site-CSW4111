@@ -29,15 +29,22 @@
 <h1>post your own events right now!</h1>
 <br>
 <div class='form'>
-  <form method="POST" action="/add_post">
-    <p>your sid(student id) is:<input type="text" name="sid"> </p>
-    <p> type of your event is:<input type="text" name="type"> </p>
-    <p>a short description:<input type="text" name="description"></p>
-    <p>start date (YYYY-MM-DD):<input type="text" name="start_date"></p>
-    <p>start time (HH:MM:SS):<input type="text" name="start_time"></p>
-    <p>end date (YYYY-MM-DD):<input type="text" name="end_date"></p>
-    <p>end time (HH:MM:SS):<input type="text" name="end_time"></p>
-    <p>end time (HH:MM:SS):<input type="text" name="end_time"></p>
+  <form method="POST" action="/add_event">
+    <p> your student id (sid) is: </p> <input type="text" name="sid"> 
+    <p> type of your event is: </p> <input type="text" name="type"> 
+    <p>start date (YYYY-MM-DD): </p> <input type="text" name="start_date">
+    <p>start time (HH:MM:SS): </p> <input type="text" name="start_time">
+    <p>end date (YYYY-MM-DD): </p> <input type="text" name="end_date">
+    <p>end time (HH:MM:SS): </p> <input type="text" name="end_time">
+    <br>
+    <p>now please input the address information about this event</p>
+    <p>the s_number of address: </p> <input type="text" name="s_number">
+    <p>the street name: </p> <input type="text" name="street">
+    <p>city: </p> <input type="text" name="city">
+    <p>state: </p> <input type="text" name="state">
+    <p>zip code: </p> <input type="text" name="zip">
+    <p>a short description: </p> <input type="text" name="description">
+    
     <input type="submit" value="Add"> 
   </form>
 </div>

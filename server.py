@@ -203,33 +203,49 @@ def add_post():
 @app.route('/add_event', methods=['POST','GET'])
 def add_event():
   sid = request.form['sid']
-  type = request.form['type']
-  description=request.form['description']
   eid = ''.join(random.sample(string.ascii_letters + string.digits, 10))
-  start_date=request.form['start_date']
-  start_time=request.form['start_time']
-  end_date=request.form['end_date']
-  end_time=request.form['end_time']
-  if g.conn.execute('select exists(select sid from students where sid=%s)',(sid)):
-    g.conn.execute('INSERT INTO events (sid,type,description,eid,start_date,start_time,end_date,end_time) VALUES (?,?,?,?,?,?,?,?)', 
-    (sid,type,description,eid,start_date,start_time,end_date,end_time))
-    return redirect('/events')
-  else:
+  type_of_event = request.form['type']
+  #start_date=request.form['start_date']
+  #start_time=request.form['start_time']
+  #end_date=request.form['end_date']
+  #end_time=request.form['end_time']
+  s_number = request.form['s_number']
+  street=request.form['street']
+  city=request.form['city']
+  state=request.form['state']
+  zip=request.form['zip']
+  description = request.form['description']
+
+  #eid,type,start_date,start_time,end_date,end_time,s_number,street,city,state,zip,description 所有的column
+
+  try:
+    if (g.conn.execute('select exists(select sid from students where sid=%s)',(sid))):
+      g.conn.execute('INSERT INTO events(eid,type,s_number,street,city,state,zip,description) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)', 
+      [eid,type_of_event,s_number,street,city,state,zip,description])
+      return redirect('/events')
+  except:
     return render_template('login.html')
 
-@app.route('/login',methods=['POST','GET'])
+
+@app.route('/login')
 def login():
+  return render_template("login.html")
+
+
+
+@app.route('/add_login',methods=['POST','GET'])
+def add_login():
   sid = request.form['sid']
   name = request.form['name']
   login = request.form['login']
   department = request.form['department']
   school = request.form['school']
-  if g.conn.execute('select exists(select sid from students where sid=%s)',[sid]):
+  try:
+    g.conn.execute('insert into students(sid, name, department, school, login) values (%s,%s,%s,%s,%s)',[sid,name,department,school,login])
+    #if g.conn.execute('select exists(select sid from students where sid=%s)',[sid]):
+    return render_template('index.html')
+  except: 
     return 'You are already a user'
-  else: 
-    g.conn.execute('insert into students values (%s,%s,%s,%s,%s)',[sid,name,department,school,login])
-    return redirect('index.html')
-  
 
 
 if __name__ == "__main__":
