@@ -15,7 +15,7 @@ import string
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 from datetime import datetime
-from flask import Flask, request, render_template, g, redirect, Response
+from flask import Flask, request, render_template, g, redirect, Response, url_for
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
@@ -246,6 +246,37 @@ def add_login():
     return render_template('index.html')
   except: 
     return 'You are already a user'
+
+
+@app.route('/id',methods=['GET','POST'])
+def id():
+  if request.method=='POST':
+    sid=request.form.get('sid')
+    return redirect(url_for('profile',sid=sid))
+  return render_template('id.html')
+
+@app.route('/profile',methods=['GET','POST'])
+def profile():
+  sid = request.args.get('sid',None)
+  cursor = g.conn.execute("SELECT pid, content FROM posts where sid=%s",(sid))
+  posts = []
+  for result in cursor:
+    posts.append((result['pid'], result['content']))  
+  cursor.close()
+  
+  cursor = g.conn.execute("select e.eid,e.type,e.description from (SELECT eid FROM attend where sid=%s) as A, events e where A.eid=e.eid",(sid))
+  events = []
+  for result in cursor:
+    events.append((result['eid'], result['type'],result['description']))  
+  cursor.close()
+
+  context = dict(data1 = posts,data2=events)
+  return render_template("profile.html",**context)
+
+@app.route('/test')
+def test():
+  sid=request.args.get('sid')
+  return render_template('test.html',sid=sid)
 
 
 if __name__ == "__main__":

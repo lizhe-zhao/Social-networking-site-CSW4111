@@ -1,43 +1,54 @@
 {%extends 'base.html'%}
 
 {%block body%}
-    <h1>this is our event page! you can check posts from other students right here!</h1>
+
+<h1>This is your profile page</h1>
+<h1>Your posts:</h1>
+<div class='content'>
+    {% if data1|length < 1%}
+    <h4>You have 0 post.</h4>
+    {% else %}
     <table>
-        <tr>
-            <th>event</th>
-            <th>type</th>
-            <th>description</th>
-        </tr>
+      <tr>
+        <th>pid</th>
+        <th>content</th>
+      </tr>
 
-        {% for n in data %}
-        <tr>
-            <td>{{n[0]}}</td>
-            <td>{{n[1]}}</td>
-            <td>{{n[2]}}</td>
-        </tr>
-        {% endfor %}
+    {% for n in data %}
+      <tr>
+        <td>{{n[0]}}</td>
+        <td>{{n[1]}}</td>
+      </tr>
+    {% endfor %}
     </table>
-
-  
-
-    <p><a href="/">Go to the home page</a></p>
-
-
-<br>
-
-<h1>post your own events right now!</h1>
-<br>
-<div class='form'>
-  <form method="POST" action="/add_post">
-    <p>your sid(student id) is: </p> 
-    <input type="text" name="sid"> 
-    <p> type of your event is: </p> 
-    <input type="text" name="type"> 
-    <p>a short description: </p> 
-    <input type="text" name="description"><input type="submit" value="Add"> 
-  </form>
+    {% endif %}
 </div>
-<br>
+<h1>Your events:</h1>
+<div class='content'>
+  {% if data2|length < 1%}
+  <h4>You attend 0 event.</h4>
+  {% else %}
+  <table>
+    <tr>
+      <th>event</th>
+      <th>type</th>
+      <th>description</th>
+     </tr>
 
-</form>
+    {% for n in data2 %}
+    <tr>
+      <td>{{n[0]}}</td>
+      <td>{{n[1]}}</td>
+      <td>{{n[2]}}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+</div>
+
+
+<p><a href="/">Go to the home page</a></p>
+
+
+<br>
 {% endblock %}

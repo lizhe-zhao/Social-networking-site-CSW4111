@@ -1,0 +1,13 @@
+{%extends 'base.html'%}
+
+{%block body%}
+<h1>Enter your sid and email to see your profile:</h1>
+<br>
+<div class='form'>
+  <form method="POST" action="/id">
+    <p>your sid(student id) is:<input type="text" name="sid"> </p>
+    <p>your email is:<input type="text" name="login"><input type="submit" value="Submit"></p>
+  </form>
+</div>
+
+{%endblock%}
