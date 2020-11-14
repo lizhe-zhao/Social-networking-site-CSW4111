@@ -1,18 +1,18 @@
 {%extends 'base.html'%}
 
 {%block body%}
-<h1>post detail page of {{data1[0]}}</h1>
+<h1>detail page of post: {{data1[0]}}</h1>
 <h4>net votes: {{data2[1]}} total votes:{{data2[2]}}</h4>
 <table>
     <tr>
+        <th>post date</th>
         <th>post time</th>
         <th>posted by</th>
         <th>content</th>
     </tr>
     <tr>
-        <td>{{data1[3].strftime('%Y-%m-%d')}}
-            <br>
-            {{data1[4].strftime('%H:%M:%S')}}</td>
+        <td>{{data1[3].strftime('%Y-%m-%d')}}</td>
+        <td>{{data1[4].strftime('%H:%M:%S')}}</td>
         <td>{{data1[2]}}</td>
         <td>{{data1[1]}}</td>
     </tr>

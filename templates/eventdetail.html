@@ -1,21 +1,66 @@
 {%extends 'base.html'%}
 
 {%block body%}
-<h1>post detail page of (eid) {{data1[0]}}</h1>
+<h1>detail page of event: {% for h in data1%}{{h}}{% endfor %}</h1>
+<h4>net votes: {{vote[1]}} total votes:{{vote[2]}}</h4>
+<h4>this event starts on {% for h in data4%}{{h.strftime('%Y-%m-%d')}}{% endfor %}
+    {% for h in data5%}{{h.strftime('%H:%M:%S')}}{% endfor %}</h4>
+<h4>this event ends on {% for h in data6%}{{h.strftime('%Y-%m-%d')}}{% endfor %}
+    {% for h in data7%}{{h.strftime('%H:%M:%S')}}{% endfor %}</h4>
 <table>
     <tr>
-        <th>event time</th>
-        <th>posted by</th>
-        <th>content</th>
+        <th>hosted by</th>
+        <th>host type</th>
+        <th>description</th>
+        <th>capacity</th>
     </tr>
     <tr>
-        <td>{{data1[3].strftime('%Y-%m-%d')}}
-            <br>
-            {{data1[4].strftime('%H:%M:%S')}}</td>
-        <td>{{data1[2]}}</td>
-        <td>{{data1[1]}}</td>
+        <td>
+            {% for h in data3%}
+            {{h}}
+            {% endfor %}
+        </td>
+        <td>{% for h in data9%}{{h}}{% endfor %}</td>
+        <td>{% for h in data2%}{{h}}{% endfor %}</td>
+        <td>{% for h in data8%}{{h}}{% endfor %}</td>
     </tr>
 </table>
+<h4>location of this event:</h4>
+<table>
+    <tr>
+        <th>street number</th>
+        <th>street</th>
+        <th>city</th>
+        <th>state</th>
+        <th>ZIP</th>
+    </tr>
+    {% for l in loc %}
+    <tr>
+        <td>{{l[0]}}</td>
+        <td>{{l[1]}}</td>
+        <td>{{l[2]}}</td>
+        <td>{{l[3]}}</td>
+        <td>{{l[4]}}</td>
+    </tr>
+    {% endfor %}
+</table>
+<h4>comments of this event:</h4>
+{% if com|length < 1 %}
+<h4>This post has 0 comment</h4>
+{% else %}
+<table>
+    <tr>
+        <th>commented by:</th>
+        <th>content</th>
+    </tr>
+{% for n in com%}
+    <tr>
+        <td>{{n[0]}}</td>
+        <td>{{n[1]}}</td>
+    </tr>
+{%endfor%}
+</table>
+{%endif%}
 
 
 <p><a href="/">Go to the home page</a></p>

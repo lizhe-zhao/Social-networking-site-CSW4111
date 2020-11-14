@@ -164,10 +164,10 @@ def index():
 
 @app.route('/allposts', methods=['POST', 'GET'])
 def allposts():
-  cursor = g.conn.execute("with cte as(select p.pid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from posts p, post_vote v where p.pid=v.pid group by p.pid, v.type) select p.pid,p.content,r.rate, rank() over(order by r.rate desc) as pop from (select pid, net_count/total as rate from cte) as r, posts p where p.pid=r.pid")
+  cursor = g.conn.execute("select pid, content from posts")
   posts = []
   for result in cursor:
-    posts.append((result[0], result[1],result[2],result[3]))  
+    posts.append((result[0], result[1]))  
   cursor.close()
 
   context = dict(data = posts)
@@ -178,7 +178,7 @@ def events():
   cursor = g.conn.execute("SELECT eid, type, description FROM events")
   events = []
   for result in cursor:
-    events.append((result['eid'], result['type'],result['description']))  
+    events.append((result['eid'], result['type'],result['description']))
   cursor.close()
 
   context = dict(data = events)
@@ -298,10 +298,38 @@ def postdetail(pid=None):
 
 @app.route('/eventdetail/<eid>',methods=['GET','POST'])
 def eventdetail(eid=None):
-  cursor = g.conn.execute("SELECT e.eid, e.description, s.name, e.start_date, e.start_time FROM students s, events e, event_vote ev where e.eid=%s and ev.sid=s.sid and ev.eid = e.eid",(eid))
-  events=cursor.fetchone()
+  cursor = g.conn.execute("SELECT e.eid, e.description, s.name, e.start_date, e.start_time, e.end_date, e.end_time, e.capacity, h.type FROM students s, events e, host h where e.eid=%s and h.eid=e.eid and h.sid=s.sid",(eid))
+  id=set(); description=set(); hosts=set()
+  start_date=set();start_time=set();end_date=set();end_time=set();capacity=set();type=set()
+  for res in cursor:
+    id.add(res[0])
+    description.add(res[1])
+    hosts.add(res[2])
+    start_date.add(res[3])
+    start_time.add(res[4])
+    end_date.add(res[5])
+    end_time.add(res[6])
+    capacity.add(res[7])
+    type.add(res[8])
   cursor.close()
-  context=dict(data1=events)
+
+  cursor=g.conn.execute("select s_number,street,city,state,zip from events where eid=%s",(eid))
+  location=[]
+  for l in cursor:
+    location.append((l[0],l[1],l[2],l[3],l[4]))
+  cursor.close
+
+  cursor = g.conn.execute("select s.name, c.content from comments_of_events c, students s, event_have eh where eh.ecid=c.ecid and s.sid=c.sid and eh.eid=%s",(eid))
+  comments=[]
+  for c in cursor:
+    comments.append((c[0],c[1]))
+  cursor.close()
+
+  cursor = g.conn.execute("with cte as(select e.eid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from events e, event_vote v where e.eid=v.eid group by e.eid, v.type) select eid,net_count,total from cte where eid=%s",(eid))
+  vote=cursor.fetchone()
+  cursor.close()
+
+  context=dict(data1=id,data2=description,data3=hosts,data4=start_date,data5=start_time,data6=end_date,data7=end_time,data8=capacity,data9=type,loc=location,com=comments,vote=vote)
   return render_template('eventdetail.html',**context)
 
 
