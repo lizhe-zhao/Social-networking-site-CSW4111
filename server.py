@@ -164,10 +164,10 @@ def index():
 
 @app.route('/allposts', methods=['POST', 'GET'])
 def allposts():
-  cursor = g.conn.execute("SELECT pid, content FROM posts")
+  cursor = g.conn.execute("with cte as(select p.pid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from posts p, post_vote v where p.pid=v.pid group by p.pid, v.type) select p.pid,p.content,r.rate, rank() over(order by r.rate desc) as pop from (select pid, net_count/total as rate from cte) as r, posts p where p.pid=r.pid")
   posts = []
   for result in cursor:
-    posts.append((result['pid'], result['content']))  
+    posts.append((result[0], result[1],result[2],result[3]))  
   cursor.close()
 
   context = dict(data = posts)
@@ -282,8 +282,27 @@ def postdetail(pid=None):
   cursor = g.conn.execute("SELECT p.pid, p.content, s.name, p.post_date, p.post_time FROM students s, posts p where p.pid=%s and s.sid=p.sid",(pid))
   post=cursor.fetchone()
   cursor.close()
-  context=dict(data1=post)
+
+  cursor = g.conn.execute("with cte as(select p.pid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from posts p, post_vote v where p.pid=v.pid group by p.pid, v.type) select pid,net_count,total from cte where pid=%s",(pid))
+  vote=cursor.fetchone()
+  cursor.close()
+
+  cursor = g.conn.execute("select s.name, c.content from comments_of_posts c, students s, posts_have ph where ph.pcid=c.pcid and s.sid=c.sid and ph.pid=%s",(pid))
+  comments=[]
+  for c in cursor:
+    comments.append((c[0],c[1]))
+  cursor.close()
+
+  context=dict(data1=post,data2=vote,data3=comments)
   return render_template('postdetail.html',**context)
+
+@app.route('/eventdetail/<eid>',methods=['GET','POST'])
+def eventdetail(eid=None):
+  cursor = g.conn.execute("SELECT e.eid, e.description, s.name, e.start_date, e.start_time FROM students s, events e, event_vote ev where e.eid=%s and ev.sid=s.sid and ev.eid = e.eid",(eid))
+  events=cursor.fetchone()
+  cursor.close()
+  context=dict(data1=events)
+  return render_template('eventdetail.html',**context)
 
 
 if __name__ == "__main__":

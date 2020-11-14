@@ -6,12 +6,16 @@
         <tr>
             <th>pid</th>
             <th>content</th>
+            <th>popularity</th>
+            <th>rank</th>
         </tr>
 
         {% for n in data %}
         <tr>
             <td><a href="{{url_for('postdetail',pid=n[0])}}">{{n[0]}}</a></td>
             <td>{{n[1]}}</td>
+            <td>{{n[2]}}</td>
+            <td>{{n[3]}}</td>
         </tr>
         {% endfor %}
     </table>

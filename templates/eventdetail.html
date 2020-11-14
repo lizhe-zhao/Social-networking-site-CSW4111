@@ -1,11 +1,10 @@
 {%extends 'base.html'%}
 
 {%block body%}
-<h1>post detail page of {{data1[0]}}</h1>
-<h4>net votes: {{data2[1]}} total votes:{{data2[2]}}</h4>
+<h1>post detail page of (eid) {{data1[0]}}</h1>
 <table>
     <tr>
-        <th>post time</th>
+        <th>event time</th>
         <th>posted by</th>
         <th>content</th>
     </tr>
@@ -17,23 +16,6 @@
         <td>{{data1[1]}}</td>
     </tr>
 </table>
-<h1>comments of this post:</h1>
-{% if data3|length < 1 %}
-<h4>This post has 0 comment</h4>
-{% else %}
-<table>
-    <tr>
-        <th>commented by:</th>
-        <th>content</th>
-    </tr>
-{% for n in data3%}
-    <tr>
-        <td>{{n[0]}}</td>
-        <td>{{n[1]}}</td>
-    </tr>
-{%endfor%}
-</table>
-{%endif%}
 
 
 <p><a href="/">Go to the home page</a></p>
