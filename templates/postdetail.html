@@ -1,0 +1,25 @@
+{%extends 'base.html'%}
+
+{%block body%}
+<h1>post detail page of {{data1[0]}}</h1>
+<table>
+    <tr>
+        <th>post time</th>
+        <th>posted by</th>
+        <th>content</th>
+    </tr>
+    <tr>
+        <td>{{data1[3].strftime('%Y-%m-%d')}}
+            <br>
+            {{data1[4].strftime('%H:%M:%S')}}</td>
+        <td>{{data1[2]}}</td>
+        <td>{{data1[1]}}</td>
+    </tr>
+</table>
+
+
+<p><a href="/">Go to the home page</a></p>
+<p><a href="login">Go to the login page</a></p>
+
+<br>
+{% endblock %}

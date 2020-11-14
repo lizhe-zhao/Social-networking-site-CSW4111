@@ -273,10 +273,17 @@ def profile():
   context = dict(data1 = posts,data2=events)
   return render_template("profile.html",**context)
 
-@app.route('/test')
-def test():
-  sid=request.args.get('sid')
-  return render_template('test.html',sid=sid)
+@app.route('/test/<pid>')
+def test(pid=None):
+  return render_template('test.html',pid=pid)
+
+@app.route('/postdetail/<pid>',methods=['GET','POST'])
+def postdetail(pid=None):
+  cursor = g.conn.execute("SELECT p.pid, p.content, s.name, p.post_date, p.post_time FROM students s, posts p where p.pid=%s and s.sid=p.sid",(pid))
+  post=cursor.fetchone()
+  cursor.close()
+  context=dict(data1=post)
+  return render_template('postdetail.html',**context)
 
 
 if __name__ == "__main__":

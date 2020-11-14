@@ -10,7 +10,7 @@
 
         {% for n in data %}
         <tr>
-            <td>{{n[0]}}</td>
+            <td><a href="{{url_for('postdetail',pid=n[0])}}">{{n[0]}}</a></td>
             <td>{{n[1]}}</td>
         </tr>
         {% endfor %}
