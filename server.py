@@ -21,6 +21,7 @@ tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
 
 
+
 #
 # The following is a dummy URI that does not connect to a valid database. You will need to modify it to connect to your Part 2 database in order to use the data.
 #
@@ -243,7 +244,7 @@ def add_login():
   try:
     g.conn.execute('insert into students(sid, name, department, school, login) values (%s,%s,%s,%s,%s)',[sid,name,department,school,login])
     #if g.conn.execute('select exists(select sid from students where sid=%s)',[sid]):
-    return render_template('index.html')
+    return redirect('/')
   except: 
     return 'You are already a user'
 
@@ -277,6 +278,7 @@ def profile():
 def test(pid=None):
   return render_template('test.html',pid=pid)
 
+
 @app.route('/postdetail/<pid>',methods=['GET','POST'])
 def postdetail(pid=None):
   cursor = g.conn.execute("SELECT p.pid, p.content, s.name, p.post_date, p.post_time FROM students s, posts p where p.pid=%s and s.sid=p.sid",(pid))
@@ -295,6 +297,19 @@ def postdetail(pid=None):
 
   context=dict(data1=post,data2=vote,data3=comments)
   return render_template('postdetail.html',**context)
+
+@app.route('/add_comment/<pid>', methods=['POST','GET'])
+def add_comment(pid=None):
+  sid = request.form['sid']
+  content = request.form['comment']
+  pcid = ''.join(random.sample(string.ascii_letters + string.digits, 10))
+  comment_date = datetime.today()
+  comment_time = datetime.now().time() 
+  cursor = g.conn.execute('INSERT INTO comments_of_posts(pcid, sid, content, comment_date, comment_time ) VALUES (%s, %s, %s, %s, %s)', [pcid, sid, content, comment_date, comment_time])
+  cursor.close()
+  cursor = g.conn.execute('INSERT INTO posts_have(pcid, pid) VALUES (%s, %s)', [pcid, pid])
+  cursor.close()
+  return redirect(url_for('postdetail',pid=pid))
 
 @app.route('/eventdetail/<eid>',methods=['GET','POST'])
 def eventdetail(eid=None):
@@ -331,7 +346,6 @@ def eventdetail(eid=None):
 
   context=dict(data1=id,data2=description,data3=hosts,data4=start_date,data5=start_time,data6=end_date,data7=end_time,data8=capacity,data9=type,loc=location,com=comments,vote=vote)
   return render_template('eventdetail.html',**context)
-
 
 if __name__ == "__main__":
   import click

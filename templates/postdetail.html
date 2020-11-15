@@ -35,6 +35,16 @@
 </table>
 {%endif%}
 
+<h1>add your comment right now!</h1>
+
+<form method="POST" action="/add_comment/{{data1[0]}}">
+    <p>your sid(student id) is: </p> <input type="text" name="sid"> 
+    <p> content of your comment is: </p> <input type="text" name="comment"> <input type="submit" value="Add"> 
+    
+    <br>
+    
+</form>
+
 
 <p><a href="/">Go to the home page</a></p>
 <p><a href="login">Go to the login page</a></p>
