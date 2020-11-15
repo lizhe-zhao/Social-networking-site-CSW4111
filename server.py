@@ -347,6 +347,19 @@ def eventdetail(eid=None):
   context=dict(data1=id,data2=description,data3=hosts,data4=start_date,data5=start_time,data6=end_date,data7=end_time,data8=capacity,data9=type,loc=location,com=comments,vote=vote)
   return render_template('eventdetail.html',**context)
 
+@app.route('/add_event_comment/<eid>', methods=['POST','GET'])
+def add_event_comment(eid=None):
+  sid = request.form['sid']
+  content = request.form['comment']
+  ecid = ''.join(random.sample(string.ascii_letters + string.digits, 10))
+  comment_date = datetime.today()
+  comment_time = datetime.now().time() 
+  cursor = g.conn.execute('INSERT INTO comments_of_events(ecid, sid, content, comment_date, comment_time ) VALUES (%s, %s, %s, %s, %s)', [ecid, sid, content, comment_date, comment_time])
+  cursor.close()
+  cursor = g.conn.execute('INSERT INTO event_have(ecid, eid) VALUES (%s, %s)', [ecid, eid])
+  cursor.close()
+  return redirect(url_for('eventdetail',eid=eid))
+
 if __name__ == "__main__":
   import click
 
