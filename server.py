@@ -165,10 +165,10 @@ def index():
 
 @app.route('/allposts', methods=['POST', 'GET'])
 def allposts():
-  cursor = g.conn.execute("select pid, content from posts")
+  cursor = g.conn.execute("with cte as(select p.pid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from posts p, post_vote v where p.pid=v.pid group by p.pid, v.type) select p.pid, p.content,s.name,p.post_date,p.post_time,c.net_count from posts p, students s, cte c where s.sid=p.sid and c.pid=p.pid")
   posts = []
   for result in cursor:
-    posts.append((result[0], result[1]))  
+    posts.append((result[0], result[1],result[2],result[3],result[4],result[5]))  
   cursor.close()
 
   context = dict(data = posts)
@@ -274,10 +274,6 @@ def profile():
   context = dict(data1 = posts,data2=events)
   return render_template("profile.html",**context)
 
-@app.route('/test/<pid>')
-def test(pid=None):
-  return render_template('test.html',pid=pid)
-
 
 @app.route('/postdetail/<pid>',methods=['GET','POST'])
 def postdetail(pid=None):
@@ -359,6 +355,31 @@ def add_event_comment(eid=None):
   cursor = g.conn.execute('INSERT INTO event_have(ecid, eid) VALUES (%s, %s)', [ecid, eid])
   cursor.close()
   return redirect(url_for('eventdetail',eid=eid))
+
+@app.route('/sort_posts',methods=['POST','GET'])
+def sort_posts():
+  cond=request.form['cond']
+  posts=[]
+  if cond=='timeL':
+    cursor=g.conn.execute("with cte as(select p.pid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from posts p, post_vote v where p.pid=v.pid group by p.pid, v.type) select p.pid, p.content,s.name,p.post_date,p.post_time,c.net_count from posts p, students s, cte c where s.sid=p.sid and c.pid=p.pid order by p.post_date desc,p.post_time desc")
+  elif cond=='timeO':
+    cursor=g.conn.execute("with cte as(select p.pid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from posts p, post_vote v where p.pid=v.pid group by p.pid, v.type) select p.pid, p.content,s.name,p.post_date,p.post_time,c.net_count from posts p, students s, cte c where s.sid=p.sid and c.pid=p.pid order by p.post_date asc,p.post_time asc")
+  elif cond=='popA':
+    cursor = g.conn.execute("with cte as(select p.pid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from posts p, post_vote v where p.pid=v.pid group by p.pid, v.type) select p.pid, p.content,s.name,p.post_date,p.post_time,c.net_count from posts p, students s, cte c where s.sid=p.sid and c.pid=p.pid order by c.net_count asc")
+  elif cond=='popD':
+    cursor = g.conn.execute("with cte as(select p.pid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from posts p, post_vote v where p.pid=v.pid group by p.pid, v.type) select p.pid, p.content,s.name,p.post_date,p.post_time,c.net_count from posts p, students s, cte c where s.sid=p.sid and c.pid=p.pid order by c.net_count desc")
+  
+  for result in cursor:
+    posts.append((result[0], result[1],result[2],result[3],result[4],result[5]))  
+  cursor.close()
+  
+  context=dict(data=posts)
+  return render_template('allposts.html',**context)
+
+@app.route('/test',methods=['POST','GET'])
+def test():
+  cond=request.form['cond']
+  return render_template('test.html',data=cond)
 
 if __name__ == "__main__":
   import click

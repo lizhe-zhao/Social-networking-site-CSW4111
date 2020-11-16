@@ -1,23 +1,9 @@
 {%extends 'base.html'%}
 
 {%block body%}
-    <h1>post detail page of {{data}}</h1>
-    <table>
-        <tr>
-            <th>pid</th>
-            <th>content</th>
-        </tr>
+<h1>test page</h1>
+{%  for n in data%}
+<h4>n</h4>
+{% endfor %}
 
-        <tr>
-            <td>{{data}}</td>
-            <td>{{data}}</td>
-        </tr>
-    </table>
-
-  
-
-<p><a href="/">Go to the home page</a></p>
-<p><a href="login">Go to the login page</a></p>
-
-<br>
 {% endblock %}

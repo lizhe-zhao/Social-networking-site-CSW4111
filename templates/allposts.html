@@ -2,16 +2,34 @@
 
 {%block body%}
     <h1>this is our post page! you can check posts from other students right here!</h1>
+    <form action="/sort_posts" method='POST'>
+        <label for='cond'>Sort by:</label>
+            <select name="cond" id ='cond'>
+                <option value="timeL">Latest</option>
+                <option value="timeO">Oldest</option>
+                <option value="popA">Popularity Ascending</option>
+                <option value="popD">Popularity  Descending</option>
+            </select>
+            <input type="submit" value="Sort">
+    </form>
     <table>
         <tr>
             <th>pid</th>
+            <th>posted by</th>
             <th>content</th>
+            <th>date</th>
+            <th>time</th>
+            <th>popularity</th>
         </tr>
 
         {% for n in data %}
         <tr>
             <td><a href="{{url_for('postdetail',pid=n[0])}}">{{n[0]}}</a></td>
+            <td>{{n[2]}}</td>
             <td>{{n[1]}}</td>
+            <td>{{n[3]}}</td>
+            <td>{{n[4]}}</td>
+            <td>{{n[5]}}</td>
         </tr>
         {% endfor %}
     </table>
@@ -26,7 +44,6 @@
 
 <h1>post your own events right now!</h1>
 <br>
-
 
 
 
