@@ -1,6 +1,7 @@
 {%extends 'base.html'%}
 
 {%block body%}
+
 <h1>Enter your sid and email to see your profile:</h1>
 <br>
 <div class='form'>
@@ -9,5 +10,7 @@
     <p>your email is:<input type="text" name="login"><input type="submit" value="Submit"></p>
   </form>
 </div>
-
+{% if data%}
+<h4>{{data}}</h4>
+{% endif %}
 {%endblock%}

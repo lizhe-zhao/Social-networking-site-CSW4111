@@ -252,13 +252,22 @@ def add_login():
 @app.route('/id',methods=['GET','POST'])
 def id():
   if request.method=='POST':
-    sid=request.form.get('sid')
-    return redirect(url_for('profile',sid=sid))
+    sid=request.form['sid']
+    login=request.form['login']
+    cursor=g.conn.execute('select login from students where sid=%s',(sid))
+    email=cursor.fetchone()[0]
+    cursor.close()
+    if login==email:
+      return redirect(url_for('profile',sid=sid))
+    else:
+      err='sid and email incorrect'
+      return render_template('id.html',data=err)
   return render_template('id.html')
 
-@app.route('/profile',methods=['GET','POST'])
-def profile():
-  sid = request.args.get('sid',None)
+@app.route('/profile/<sid>',methods=['GET','POST'])
+def profile(sid=None):
+  #sid = request.args.get('sid',None)
+  sid=sid
   cursor = g.conn.execute("SELECT pid, content FROM posts where sid=%s",(sid))
   posts = []
   for result in cursor:
@@ -271,7 +280,17 @@ def profile():
     events.append((result['eid'], result['type'],result['description']))  
   cursor.close()
 
-  context = dict(data1 = posts,data2=events)
+  cursor = g.conn.execute("select e.eid, e.type, e.description from events e, currently_at at where e.city=at.city and at.sid=%s",(sid))
+  eventsatloc = []
+  for result in cursor:
+    eventsatloc.append((result['eid'], result['type'],result['description']))  
+  cursor.close()
+
+  cursor=g.conn.execute('select sid, city from currently_at where sid=%s',(sid))
+  loc=cursor.fetchone()
+  cursor.close()
+
+  context = dict(data1 = posts,data2=events,data3=eventsatloc,data4=loc)
   return render_template("profile.html",**context)
 
 
@@ -376,10 +395,24 @@ def sort_posts():
   context=dict(data=posts)
   return render_template('allposts.html',**context)
 
+@app.route('/update_loc/<sid>',methods=['GET','POST'])
+def update_loc(sid=None):
+  s_number = request.form['s_number']
+  street=request.form['street']
+  city=request.form['city']
+  state=request.form['state']
+  zip=request.form['zip']
+  if sid:
+    try:
+      g.conn.execute('insert into locations (s_number,street,city,state,zip) values (%s,%s,%s,%s,%s)',[s_number,street,city,state,zip])
+    except:
+      pass
+    g.conn.execute("UPDATE currently_at SET s_number=%s,street=%s,city=%s,state=%s,zip=%s WHERE sid=%s",[s_number,street,city,state,zip,sid])
+  return redirect(url_for('profile',sid=sid))
+
 @app.route('/test',methods=['POST','GET'])
 def test():
-  cond=request.form['cond']
-  return render_template('test.html',data=cond)
+  return render_template('test.html')
 
 if __name__ == "__main__":
   import click

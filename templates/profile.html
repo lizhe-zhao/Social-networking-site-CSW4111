@@ -16,7 +16,7 @@
 
     {% for n in data %}
       <tr>
-        <td>{{n[0]}}</td>
+        <td><a href="{{url_for('postdetail',pid=n[0])}}">{{n[0]}}</a></td>
         <td>{{n[1]}}</td>
       </tr>
     {% endfor %}
@@ -37,7 +37,7 @@
 
     {% for n in data2 %}
     <tr>
-      <td>{{n[0]}}</td>
+      <td><a href="{{url_for('eventdetail',eid=n[0])}}">{{n[0]}}</a></td>
       <td>{{n[1]}}</td>
       <td>{{n[2]}}</td>
     </tr>
@@ -45,6 +45,37 @@
   </table>
   {% endif %}
 </div>
+
+<h1>Events at your location {{data4[1]}}:</h1>
+{% if data3|length < 1 %}
+<h4>No event at your current location.</h4>
+{% else %}
+<table>
+  <tr>
+    <th>event</th>
+    <th>type</th>
+    <th>description</th>
+  </tr>
+  {%for n in data3%}
+  <tr>
+    <td><a href="{{url_for('eventdetail',eid=n[0])}}">{{n[0]}}</a></td>
+    <td>{{n[1]}}</td>
+    <td>{{n[2]}}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+<h4>Update your location:</h4>
+<form method="POST" action="/update_loc/{{data4[0]}}">
+  <p>street number: </p> <input type="text" name="s_number">
+  <p>street name: </p> <input type="text" name="street">
+  <p>city: </p> <input type="text" name="city">
+  <p>state: </p> <input type="text" name="state">
+  <p>zip code: </p> <input type="text" name="zip">
+  <br>
+  <input type="submit" value="Update"> 
+</form>
 
 
 <p><a href="/">Go to the home page</a></p>
