@@ -395,6 +395,28 @@ def sort_posts():
   context=dict(data=posts)
   return render_template('allposts.html',**context)
 
+
+@app.route('/sort_events',methods=['POST','GET'])
+def sort_events():
+  cond=request.form['cond']
+  posts=[]
+  if cond=='timeL':
+    cursor=g.conn.execute("with cte as(select e.eid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from events e, event_vote v where e.eid=v.eid group by e.eid, v.type) select e.eid, e.description, s.name, e.start_date, e.start_time, c.net_count from events e, students s, cte c, host h where s.sid=h.sid and h.eid = e.eid and c.eid=e.eid order by e.start_date desc, e.start_time desc")
+  elif cond=='timeO':
+    cursor=g.conn.execute("with cte as(select e.eid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from events e, event_vote v where e.eid=v.eid group by e.eid, v.type) select e.eid, e.description, s.name, e.start_date, e.start_time, c.net_count from events e, students s, cte c, host h where s.sid=h.sid and h.eid = e.eid and c.eid=e.eid order by e.start_date asc, e.start_time asc")
+  elif cond=='popA':
+    cursor = g.conn.execute("with cte as(select e.eid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from events e, event_vote v where e.eid=v.eid group by e.eid, v.type) select e.eid, e.description, s.name, e.start_date, e.start_time, c.net_count from events e, students s, cte c, host h where s.sid=h.sid and h.eid = e.eid and c.eid=e.eid order by c.net_count asc")
+  elif cond=='popD':
+    cursor = g.conn.execute("with cte as(select e.eid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from events e, event_vote v where e.eid=v.eid group by e.eid, v.type) select e.eid, e.description, s.name, e.start_date, e.start_time, c.net_count from events e, students s, cte c, host h where s.sid=h.sid and h.eid = e.eid and c.eid=e.eid order by c.net_count desc")
+  
+  for result in cursor:
+    posts.append((result[0], result[1],result[2],result[3],result[4],result[5]))  
+  cursor.close()
+  
+  context=dict(data=posts)
+  return render_template('events.html',**context)
+
+
 @app.route('/update_loc/<sid>',methods=['GET','POST'])
 def update_loc(sid=None):
   s_number = request.form['s_number']
