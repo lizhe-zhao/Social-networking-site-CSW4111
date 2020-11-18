@@ -218,15 +218,29 @@ def add_event():
   description = request.form['description']
 
   #eid,type,start_date,start_time,end_date,end_time,s_number,street,city,state,zip,description 所有的column
-
-  try:
-    if (g.conn.execute('select exists(select sid from students where sid=%s)',(sid))):
-      g.conn.execute('INSERT INTO events(eid,type,s_number,street,city,state,zip,description) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)', 
-      [eid,type_of_event,s_number,street,city,state,zip,description])
-      return redirect('/events')
-  except:
+  cursor=g.conn.execute('select exists(select sid from students where sid=%s)',(sid))
+  A=cursor.fetchone()[0]
+  cursor.close()
+  if A:
+    g.conn.execute('INSERT INTO events(eid,type,s_number,street,city,state,zip,description) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)', [eid,type_of_event,s_number,street,city,state,zip,description])
+    g.conn.execute('insert into host(sid,eid,type) values (%s,%s,%s)',[sid,eid,'per'])
+    return redirect('/events')
+  else:
     return render_template('login.html')
 
+@app.route('/co_host/<eid>',methods=['POST','GET'])
+def co_host(eid=None):
+  sid=request.form['sid']
+  eid=eid
+  cursor=g.conn.execute('select exists(select sid from students where sid=%s)',(sid))
+  A=cursor.fetchone()[0]
+  cursor.close()
+  if A:
+    g.conn.execute('insert into host(sid,eid) values (%s,%s)', [sid,eid])
+    g.conn.execute("update host SET type='org' WHERE eid=%s",(eid))
+    return redirect(url_for('eventdetail',eid=eid))
+  else:
+    return render_template('login.html')
 
 @app.route('/login')
 def login():
@@ -246,7 +260,8 @@ def add_login():
     #if g.conn.execute('select exists(select sid from students where sid=%s)',[sid]):
     return redirect('/')
   except: 
-    return 'You are already a user'
+    txt='You are already a user'
+    return render_template('test.html',message=txt)
 
 
 @app.route('/id',methods=['GET','POST'])
@@ -290,7 +305,13 @@ def profile(sid=None):
   loc=cursor.fetchone()
   cursor.close()
 
-  context = dict(data1 = posts,data2=events,data3=eventsatloc,data4=loc)
+  cursor = g.conn.execute("select e.eid,e.type,e.description from (SELECT eid FROM host where sid=%s) as A, events e where A.eid=e.eid",(sid))
+  host = []
+  for result in cursor:
+    host.append((result['eid'], result['type'],result['description']))  
+  cursor.close()
+
+  context = dict(data1 = posts,data2=events,data3=eventsatloc,data4=loc,data5=host)
   return render_template("profile.html",**context)
 
 
@@ -358,8 +379,12 @@ def eventdetail(eid=None):
   cursor = g.conn.execute("with cte as(select e.eid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from events e, event_vote v where e.eid=v.eid group by e.eid, v.type) select eid,net_count,total from cte where eid=%s",(eid))
   vote=cursor.fetchone()
   cursor.close()
+  
+  cursor=g.conn.execute('select e.eid, e.capacity, count(a.sid) from attend a, events e where a.eid=%s and e.eid=a.eid group by e.eid',(eid))
+  capacity=cursor.fetchone()
+  cursor.close()
 
-  context=dict(data1=id,data2=description,data3=hosts,data4=start_date,data5=start_time,data6=end_date,data7=end_time,data8=capacity,data9=type,loc=location,com=comments,vote=vote)
+  context=dict(data1=id,data2=description,data3=hosts,data4=start_date,data5=start_time,data6=end_date,data7=end_time,data8=capacity,data9=type,loc=location,com=comments,vote=vote,capacity=capacity)
   return render_template('eventdetail.html',**context)
 
 @app.route('/add_event_comment/<eid>', methods=['POST','GET'])
@@ -431,6 +456,92 @@ def update_loc(sid=None):
       pass
     g.conn.execute("UPDATE currently_at SET s_number=%s,street=%s,city=%s,state=%s,zip=%s WHERE sid=%s",[s_number,street,city,state,zip,sid])
   return redirect(url_for('profile',sid=sid))
+
+@app.route('/vote_post/<pid>',methods=['POST','GET'])
+def vote_post(pid=None):
+  cond = request.form['cond']
+  sid = request.form['sid']
+  pid=pid
+  cursor=g.conn.execute('select exists(select sid from students where sid=%s)',(sid))
+  A=cursor.fetchone()[0]
+  cursor.close()
+  if A:
+    cursor=g.conn.execute('select exists(select sid,pid from post_vote where sid=%s and pid=%s)',[sid,pid])
+    B=cursor.fetchone()[0]
+    cursor.close()
+    if not B:
+      if cond=='Up':
+        g.conn.execute('INSERT INTO post_vote(sid, pid, type) VALUES (%s, %s, %s)', [sid, pid, 'up'])
+      elif cond=='Down':
+        g.conn.execute('INSERT INTO post_vote(sid, pid, type) VALUES (%s, %s, %s)', [sid, pid, 'down'])
+      return redirect(url_for('postdetail',pid=pid))
+    else:
+      txt='You have voted for this post.'
+      return render_template('test.html',message=txt)
+  else:
+    return render_template('login.html')
+
+@app.route('/vote_event/<eid>',methods=['POST','GET'])
+def vote_event(eid=None):
+  cond = request.form['cond']
+  sid = request.form['sid']
+  eid=eid
+  cursor=g.conn.execute('select exists(select sid from students where sid=%s)',(sid))
+  A=cursor.fetchone()[0]
+  cursor.close()
+  if A:
+    cursor=g.conn.execute('select exists(select sid,eid from event_vote where sid=%s and eid=%s)',[sid,eid])
+    B=cursor.fetchone()[0]
+    cursor.close()
+    if not B:
+      if cond=='Up':
+        g.conn.execute('INSERT INTO event_vote (sid, eid, type) VALUES (%s, %s, %s)', [sid, eid, 'up'])
+      elif cond=='Down':
+        g.conn.execute('INSERT INTO event_vote (sid, eid, type) VALUES (%s, %s, %s)', [sid, eid, 'down'])
+      return redirect(url_for('eventdetail',eid=eid))
+    else:
+      txt='You have voted for this event.'
+      return render_template('test.html',message=txt)
+  else:
+    return render_template('login.html')
+
+@app.route('/joinevent/<eid>',methods=['POST','GET'])
+def joinevent(eid=None):
+  cond=request.form['cond']
+  sid=request.form['sid']
+  eid=eid
+  cursor=g.conn.execute('select exists(select sid from students where sid=%s)',(sid))
+  A=cursor.fetchone()[0]
+  cursor.close()
+  if A:
+    cursor=g.conn.execute('select exists(select sid,eid from attend where sid=%s and eid=%s)',[sid,eid])
+    B=cursor.fetchone()[0]
+    cursor.close()
+    cursor=g.conn.execute('select e.eid, e.capacity, count(a.sid) from attend a, events e where a.eid=%s and e.eid=a.eid group by e.eid',(eid))
+    capacity=cursor.fetchone()
+    cursor.close()
+    if not B:
+      if cond=='Join':
+        cursor=g.conn.execute('select name from students where sid=%s',(sid))
+        name=cursor.fetchone()[0]
+        cursor.close()
+        if capacity[2]<=capacity[1]:
+          g.conn.execute('INSERT INTO attend (sid, eid, name) VALUES (%s, %s, %s)', [sid, eid, name])
+        else:
+          txt='List is full for this event.'
+          return render_template('test.html',message=txt)
+      elif cond=='Leave':
+        try:
+          g.conn.execute('delete from attend where sid=%s and eid=%s',[sid,eid])
+        except:
+          txt='There was an issue leaving the list.'
+          return render_template('test.html',message=txt)
+      return redirect(url_for('eventdetail',eid=eid))
+    else:
+      txt='You are already in the list.'
+      return render_template('test.html',message=txt)
+  else:
+    return render_template('login.html')
 
 @app.route('/test',methods=['POST','GET'])
 def test():

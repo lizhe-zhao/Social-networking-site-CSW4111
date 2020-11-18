@@ -22,7 +22,7 @@
         </td>
         <td>{% for h in data9%}{{h}}{% endfor %}</td>
         <td>{% for h in data2%}{{h}}{% endfor %}</td>
-        <td>{% for h in data8%}{{h}}{% endfor %}</td>
+        <td>{{capacity[2]}}/{{capacity[1]}}</td>
     </tr>
 </table>
 <h4>location of this event:</h4>
@@ -62,12 +62,39 @@
 </table>
 {%endif%}
 
-
+<h1>add your comment right now!</h1>
 <form method="POST" action="/add_event_comment/{{vote[0]}}">
     <p>your sid(student id) is: </p> <input type="text" name="sid"> 
     <p> content of your comment is: </p> <input type="text" name="comment"> <input type="submit" value="Add"> 
     
     <br>  
+</form>
+
+<h1>vote for this event:</h1> 
+<form action="/vote_event/{{vote[0]}}" method='POST'>
+    <p>your sid(student id) is: </p > <input type="text" name="sid">
+    <label for='cond'>Vote this event:</label>
+        <select name="cond" id ='cond'>
+            <option value="Up">Up</option>
+            <option value="Down">Down</option>
+        </select>
+        <input type="submit" value="Vote">
+</form>
+<br>
+<h1>Join or leave this event:</h1> 
+<form action="/joinevent/{{vote[0]}}" method='POST'>
+    <p>your sid(student id) is: </p > <input type="text" name="sid">
+    <label for='cond'>Action:</label>
+        <select name="cond" id ='cond'>
+            <option value="Join">Join</option>
+            <option value="Leave">Leave</option>
+        </select>
+        <input type="submit" value="Vote">
+</form>
+
+<h1>Are you a co-host of this event?</h1> 
+<form action="/co_host/{{vote[0]}}" method='POST'>
+    <p>your sid(student id) is: </p > <input type="text" name="sid"><input type="submit" value="Submit">
 </form>
 
 <p><a href="/">Go to the home page</a></p>

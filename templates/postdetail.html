@@ -39,10 +39,19 @@
 
 <form method="POST" action="/add_comment/{{data1[0]}}">
     <p>your sid(student id) is: </p> <input type="text" name="sid"> 
-    <p> content of your comment is: </p> <input type="text" name="comment"> <input type="submit" value="Add"> 
-    
-    <br>
-    
+    <p> content of your comment is: </p> <input type="text" name="comment"> <input type="submit" value="Add">   
+    <br>    
+</form>
+
+<h1>vote for this post:</h1> 
+<form action="/vote_post/{{data1[0]}}" method='POST'>
+    <p>your sid(student id) is: </p > <input type="text" name="sid">
+    <label for='cond'>Vote this post:</label>
+        <select name="cond" id ='cond'>
+            <option value="Up">Up</option>
+            <option value="Down">Down</option>
+        </select>
+        <input type="submit" value="Vote">
 </form>
 
 

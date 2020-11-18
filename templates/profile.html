@@ -23,10 +23,34 @@
     </table>
     {% endif %}
 </div>
-<h1>Your events:</h1>
+
+<h1>You are attending:</h1>
 <div class='content'>
   {% if data2|length < 1%}
   <h4>You attend 0 event.</h4>
+  {% else %}
+  <table>
+    <tr>
+      <th>event</th>
+      <th>type</th>
+      <th>description</th>
+     </tr>
+
+    {% for n in data2 %}
+    <tr>
+      <td><a href="{{url_for('eventdetail',eid=n[0])}}">{{n[0]}}</a></td>
+      <td>{{n[1]}}</td>
+      <td>{{n[2]}}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+</div>
+
+<h1>You are hosting:</h1>
+<div class='content'>
+  {% if data5|length < 1%}
+  <h4>You host 0 event.</h4>
   {% else %}
   <table>
     <tr>
