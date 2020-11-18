@@ -216,12 +216,13 @@ def add_event():
   state=request.form['state']
   zip=request.form['zip']
   description = request.form['description']
+  capacity=request.form['capacity']
 
   cursor=g.conn.execute('select exists(select sid from students where sid=%s)',(sid))
   A=cursor.fetchone()[0]
   cursor.close()
   if A:
-    g.conn.execute('INSERT INTO events(eid,type,start_date,start_time,end_date,end_time,s_number,street,city,state,zip,description) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', [eid,type_of_event,start_date,start_time,end_date,end_time,s_number,street,city,state,zip,description])
+    g.conn.execute('INSERT INTO events(eid,type,start_date,start_time,end_date,end_time,s_number,street,city,state,zip,description,capacity) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', [eid,type_of_event,start_date,start_time,end_date,end_time,s_number,street,city,state,zip,description,capacity])
     g.conn.execute('insert into host(sid,eid,type) values (%s,%s,%s)',[sid,eid,'per'])
     return redirect('/events')
   else:
@@ -379,7 +380,7 @@ def eventdetail(eid=None):
   vote=cursor.fetchone()
   cursor.close()
   
-  cursor=g.conn.execute('select e.eid, e.capacity, count(a.sid) from attend a, events e where a.eid=%s and e.eid=a.eid group by e.eid',(eid))
+  cursor=g.conn.execute('select e.eid, coalesce(e.capacity,100), coalesce(count(a.sid),0) from events e left join attend a on e.eid=a.eid where a.eid=%s group by e.eid',(eid))
   capacity=cursor.fetchone()
   cursor.close()
 
@@ -524,7 +525,7 @@ def joinevent(eid=None):
         cursor=g.conn.execute('select name from students where sid=%s',(sid))
         name=cursor.fetchone()[0]
         cursor.close()
-        if capacity[2]<=capacity[1]:
+        if capacity[2]<=int(capacity[1]):
           g.conn.execute('INSERT INTO attend (sid, eid, name) VALUES (%s, %s, %s)', [sid, eid, name])
         else:
           txt='List is full for this event.'
