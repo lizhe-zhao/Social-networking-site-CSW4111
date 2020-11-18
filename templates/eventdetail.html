@@ -3,10 +3,10 @@
 {%block body%}
 <h1>detail page of event: {% for h in data1%}{{h}}{% endfor %}</h1>
 <h2>net votes: {{vote[1]}} total votes:{{vote[2]}}</h2>
-<h2>this event starts on {% for h in data4%}{{h.strftime('%Y-%m-%d')}}{% endfor %}
-    {% for h in data5%}{{h.strftime('%H:%M:%S')}}{% endfor %}</h2>
-<h2>this event ends on {% for h in data6%}{{h.strftime('%Y-%m-%d')}}{% endfor %}
-    {% for h in data7%}{{h.strftime('%H:%M:%S')}}{% endfor %}</h2>
+<h2>this event starts on {% for h in data4%}{% if h %}{{h.strftime('%Y-%m-%d')}}{%else%}n/a{%endif%}{% endfor %}
+    {% for h in data5%}{% if h %}{{h.strftime('%H:%M:%S')}}{%else%}n/a{%endif%}{% endfor %}</h2>
+<h2>this event ends on {% for h in data6%}{% if h %}{{h.strftime('%Y-%m-%d')}}{%else%}n/a{%endif%}{% endfor %}
+    {% for h in data7%}{% if h %}{{h.strftime('%H:%M:%S')}}{%else%}n/a{%endif%}{% endfor %}</h2>
 <table>
     <tr>
         <th>hosted by</th>
