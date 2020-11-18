@@ -520,7 +520,7 @@ def joinevent(eid=None):
     cursor=g.conn.execute('select e.eid, e.capacity, count(a.sid) from attend a, events e where a.eid=%s and e.eid=a.eid group by e.eid',(eid))
     capacity=cursor.fetchone()
     cursor.close()
-    if not B:
+    if B:
       if cond=='Join':
         cursor=g.conn.execute('select name from students where sid=%s',(sid))
         name=cursor.fetchone()[0]
