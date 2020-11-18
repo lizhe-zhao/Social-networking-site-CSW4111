@@ -2,11 +2,11 @@
 
 {%block body%}
 <h1>detail page of event: {% for h in data1%}{{h}}{% endfor %}</h1>
-<h4>net votes: {{vote[1]}} total votes:{{vote[2]}}</h4>
-<h4>this event starts on {% for h in data4%}{{h.strftime('%Y-%m-%d')}}{% endfor %}
-    {% for h in data5%}{{h.strftime('%H:%M:%S')}}{% endfor %}</h4>
-<h4>this event ends on {% for h in data6%}{{h.strftime('%Y-%m-%d')}}{% endfor %}
-    {% for h in data7%}{{h.strftime('%H:%M:%S')}}{% endfor %}</h4>
+<h2>net votes: {{vote[1]}} total votes:{{vote[2]}}</h2>
+<h2>this event starts on {% for h in data4%}{{h.strftime('%Y-%m-%d')}}{% endfor %}
+    {% for h in data5%}{{h.strftime('%H:%M:%S')}}{% endfor %}</h2>
+<h2>this event ends on {% for h in data6%}{{h.strftime('%Y-%m-%d')}}{% endfor %}
+    {% for h in data7%}{{h.strftime('%H:%M:%S')}}{% endfor %}</h2>
 <table>
     <tr>
         <th>hosted by</th>
@@ -44,7 +44,7 @@
     </tr>
     {% endfor %}
 </table>
-<h4>comments of this event:</h4>
+<h2>comments of this event:</h2>
 {% if com|length < 1 %}
 <h4>This post has 0 comment</h4>
 {% else %}
@@ -62,7 +62,7 @@
 </table>
 {%endif%}
 
-<h1>add your comment right now!</h1>
+<h2>add your comment right now!</h2>
 <form method="POST" action="/add_event_comment/{{vote[0]}}">
     <p>your sid(student id) is: </p> <input type="text" name="sid"> 
     <p> content of your comment is: </p> <input type="text" name="comment"> <input type="submit" value="Add"> 
@@ -70,7 +70,7 @@
     <br>  
 </form>
 
-<h1>vote for this event:</h1> 
+<h2>vote for this event:</h2> 
 <form action="/vote_event/{{vote[0]}}" method='POST'>
     <p>your sid(student id) is: </p > <input type="text" name="sid">
     <label for='cond'>Vote this event:</label>
@@ -81,7 +81,7 @@
         <input type="submit" value="Vote">
 </form>
 <br>
-<h1>Join or leave this event:</h1> 
+<h2>Join or leave this event:</h2> 
 <form action="/joinevent/{{vote[0]}}" method='POST'>
     <p>your sid(student id) is: </p > <input type="text" name="sid">
     <label for='cond'>Action:</label>
@@ -92,9 +92,9 @@
         <input type="submit" value="Vote">
 </form>
 
-<h1>Are you a co-host of this event?</h1> 
+<h2>Are you a co-host of this event?</h2> 
 <form action="/co_host/{{vote[0]}}" method='POST'>
-    <p>your sid(student id) is: </p > <input type="text" name="sid"><input type="submit" value="Submit">
+    <p>your sid(student id) is: </p > <input type="text" name="sid"><input type="submit" value="Co-host">
 </form>
 
 <p><a href="/">Go to the home page</a></p>
