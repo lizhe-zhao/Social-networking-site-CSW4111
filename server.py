@@ -165,7 +165,7 @@ def index():
 
 @app.route('/allposts', methods=['POST', 'GET'])
 def allposts():
-  cursor = g.conn.execute("with cte as(select p.pid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from posts p, post_vote v where p.pid=v.pid group by p.pid, v.type) select p.pid, p.content,s.name,p.post_date,p.post_time,c.net_count from posts p, students s, cte c where s.sid=p.sid and c.pid=p.pid")
+  cursor = g.conn.execute("with cte as(select p.pid, sum(case when v.type='up' then 1 else -1 end) as net_count, count(*) as total from posts p, post_vote v where p.pid=v.pid group by p.pid) select p.pid, p.content,s.name,p.post_date,p.post_time,coalesce(c.net_count,0) from posts p left join students s on s.sid=p.sid left join cte c on c.pid=p.pid")
   posts = []
   for result in cursor:
     posts.append((result[0], result[1],result[2],result[3],result[4],result[5]))  
@@ -206,10 +206,10 @@ def add_event():
   sid = request.form['sid']
   eid = ''.join(random.sample(string.ascii_letters + string.digits, 10))
   type_of_event = request.form['type']
-  #start_date=request.form['start_date']
-  #start_time=request.form['start_time']
-  #end_date=request.form['end_date']
-  #end_time=request.form['end_time']
+  start_date=request.form['start_date']
+  start_time=request.form['start_time']
+  end_date=request.form['end_date']
+  end_time=request.form['end_time']
   s_number = request.form['s_number']
   street=request.form['street']
   city=request.form['city']
@@ -217,12 +217,11 @@ def add_event():
   zip=request.form['zip']
   description = request.form['description']
 
-  #eid,type,start_date,start_time,end_date,end_time,s_number,street,city,state,zip,description 所有的column
   cursor=g.conn.execute('select exists(select sid from students where sid=%s)',(sid))
   A=cursor.fetchone()[0]
   cursor.close()
   if A:
-    g.conn.execute('INSERT INTO events(eid,type,s_number,street,city,state,zip,description) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)', [eid,type_of_event,s_number,street,city,state,zip,description])
+    g.conn.execute('INSERT INTO events(eid,type,start_date,start_time,end_date,end_time,s_number,street,city,state,zip,description) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', [eid,type_of_event,start_date,start_time,end_date,end_time,s_number,street,city,state,zip,description])
     g.conn.execute('insert into host(sid,eid,type) values (%s,%s,%s)',[sid,eid,'per'])
     return redirect('/events')
   else:
@@ -321,7 +320,7 @@ def postdetail(pid=None):
   post=cursor.fetchone()
   cursor.close()
 
-  cursor = g.conn.execute("with cte as(select p.pid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from posts p, post_vote v where p.pid=v.pid group by p.pid, v.type) select pid,net_count,total from cte where pid=%s",(pid))
+  cursor = g.conn.execute("with cte as(select p.pid,sum(case when v.type='up' then 1 else -1 end) as net_count, count(*) as total from posts p, post_vote v where p.pid=v.pid group by p.pid) select p.pid,coalesce(c.net_count,0) as net,coalesce(c.total,0) as total from posts p left join cte c on p.pid=c.pid where p.pid=%s",(pid))
   vote=cursor.fetchone()
   cursor.close()
 
@@ -376,7 +375,7 @@ def eventdetail(eid=None):
     comments.append((c[0],c[1]))
   cursor.close()
 
-  cursor = g.conn.execute("with cte as(select e.eid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from events e, event_vote v where e.eid=v.eid group by e.eid, v.type) select eid,net_count,total from cte where eid=%s",(eid))
+  cursor = g.conn.execute("with cte as(select e.eid, sum(case when v.type='up' then 1 else -1 end) as net_count, count(*) as total from events e, event_vote v where e.eid=v.eid group by e.eid) select e.eid,coalesce(c.net_count,0),coalesce(c.total,0) from events e left join cte c on c.eid=e.eid where e.eid=%s",(eid))
   vote=cursor.fetchone()
   cursor.close()
   
@@ -405,13 +404,13 @@ def sort_posts():
   cond=request.form['cond']
   posts=[]
   if cond=='timeL':
-    cursor=g.conn.execute("with cte as(select p.pid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from posts p, post_vote v where p.pid=v.pid group by p.pid, v.type) select p.pid, p.content,s.name,p.post_date,p.post_time,c.net_count from posts p, students s, cte c where s.sid=p.sid and c.pid=p.pid order by p.post_date desc,p.post_time desc")
+    cursor=g.conn.execute("with cte as(select p.pid,sum(case when v.type='up' then 1 else -1 end)as net_count, count(*) as total from posts p, post_vote v where p.pid=v.pid group by p.pid) select p.pid, p.content,s.name,p.post_date,p.post_time,coalesce(c.net_count,0) from posts p left join students s on s.sid=p.sid left join cte c on c.pid=p.pid order by p.post_date desc,p.post_time desc")
   elif cond=='timeO':
-    cursor=g.conn.execute("with cte as(select p.pid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from posts p, post_vote v where p.pid=v.pid group by p.pid, v.type) select p.pid, p.content,s.name,p.post_date,p.post_time,c.net_count from posts p, students s, cte c where s.sid=p.sid and c.pid=p.pid order by p.post_date asc,p.post_time asc")
+    cursor=g.conn.execute("with cte as(select p.pid,sum(case when v.type='up' then 1 else -1 end)as net_count, count(*) as total from posts p, post_vote v where p.pid=v.pid group by p.pid) select p.pid, p.content,s.name,p.post_date,p.post_time,coalesce(c.net_count,0) from posts p left join students s on s.sid=p.sid left join cte c on c.pid=p.pid order by p.post_date asc,p.post_time asc")
   elif cond=='popA':
-    cursor = g.conn.execute("with cte as(select p.pid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from posts p, post_vote v where p.pid=v.pid group by p.pid, v.type) select p.pid, p.content,s.name,p.post_date,p.post_time,c.net_count from posts p, students s, cte c where s.sid=p.sid and c.pid=p.pid order by c.net_count asc")
+    cursor = g.conn.execute("with cte as(select p.pid,sum(case when v.type='up' then 1 else -1 end)as net_count, count(*) as total from posts p, post_vote v where p.pid=v.pid group by p.pid) select p.pid, p.content,s.name,p.post_date,p.post_time,coalesce(c.net_count,0) from posts p left join students s on s.sid=p.sid left join cte c on c.pid=p.pid order by c.net_count asc")
   elif cond=='popD':
-    cursor = g.conn.execute("with cte as(select p.pid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from posts p, post_vote v where p.pid=v.pid group by p.pid, v.type) select p.pid, p.content,s.name,p.post_date,p.post_time,c.net_count from posts p, students s, cte c where s.sid=p.sid and c.pid=p.pid order by c.net_count desc")
+    cursor = g.conn.execute("with cte as(select p.pid,sum(case when v.type='up' then 1 else -1 end)as net_count, count(*) as total from posts p, post_vote v where p.pid=v.pid group by p.pid) select p.pid, p.content,s.name,p.post_date,p.post_time,coalesce(c.net_count,0) from posts p left join students s on s.sid=p.sid left join cte c on c.pid=p.pid order by c.net_count desc")
   
   for result in cursor:
     posts.append((result[0], result[1],result[2],result[3],result[4],result[5]))  
@@ -426,13 +425,13 @@ def sort_events():
   cond=request.form['cond']
   posts=[]
   if cond=='timeL':
-    cursor=g.conn.execute("with cte as(select e.eid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from events e, event_vote v where e.eid=v.eid group by e.eid, v.type) select e.eid, e.description, s.name, e.start_date, e.start_time, c.net_count from events e, students s, cte c, host h where s.sid=h.sid and h.eid = e.eid and c.eid=e.eid order by e.start_date desc, e.start_time desc")
+    cursor=g.conn.execute("with cte as(select e.eid,sum(case when v.type='up' then 1 else -1 end) as net_count, count(*) as total from events e, event_vote v where e.eid=v.eid group by e.eid) select e.eid, e.description, s.name, e.start_date, e.start_time, coalesce(c.net_count,0) from events e left join host h on e.eid=h.eid left join students s on h.sid=s.sid left join cte c on c.eid=e.eid order by e.start_date desc, e.start_time desc")
   elif cond=='timeO':
-    cursor=g.conn.execute("with cte as(select e.eid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from events e, event_vote v where e.eid=v.eid group by e.eid, v.type) select e.eid, e.description, s.name, e.start_date, e.start_time, c.net_count from events e, students s, cte c, host h where s.sid=h.sid and h.eid = e.eid and c.eid=e.eid order by e.start_date asc, e.start_time asc")
+    cursor=g.conn.execute("with cte as(select e.eid,sum(case when v.type='up' then 1 else -1 end) as net_count, count(*) as total from events e, event_vote v where e.eid=v.eid group by e.eid) select e.eid, e.description, s.name, e.start_date, e.start_time, coalesce(c.net_count,0) from events e left join host h on e.eid=h.eid left join students s on h.sid=s.sid left join cte c on c.eid=e.eid order by e.start_date asc, e.start_time asc")
   elif cond=='popA':
-    cursor = g.conn.execute("with cte as(select e.eid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from events e, event_vote v where e.eid=v.eid group by e.eid, v.type) select e.eid, e.description, s.name, e.start_date, e.start_time, c.net_count from events e, students s, cte c, host h where s.sid=h.sid and h.eid = e.eid and c.eid=e.eid order by c.net_count asc")
+    cursor = g.conn.execute("with cte as(select e.eid,sum(case when v.type='up' then 1 else -1 end) as net_count, count(*) as total from events e, event_vote v where e.eid=v.eid group by e.eid) select e.eid, e.description, s.name, e.start_date, e.start_time,coalesce(c.net_count,0) from events e left join host h on e.eid=h.eid left join students s on h.sid=s.sid left join cte c on c.eid=e.eid order by c.net_count asc")
   elif cond=='popD':
-    cursor = g.conn.execute("with cte as(select e.eid,count(v.type), case when v.type='up' then 1 else -1 end as net_count, count(*) as total from events e, event_vote v where e.eid=v.eid group by e.eid, v.type) select e.eid, e.description, s.name, e.start_date, e.start_time, c.net_count from events e, students s, cte c, host h where s.sid=h.sid and h.eid = e.eid and c.eid=e.eid order by c.net_count desc")
+    cursor = g.conn.execute("with cte as(select e.eid,sum(case when v.type='up' then 1 else -1 end) as net_count, count(*) as total from events e, event_vote v where e.eid=v.eid group by e.eid) select e.eid, e.description, s.name, e.start_date, e.start_time, coalesce(c.net_count,0) from events e left join host h on e.eid=h.eid left join students s on h.sid=s.sid left join cte c on c.eid=e.eid order by c.net_count desc")
   
   for result in cursor:
     posts.append((result[0], result[1],result[2],result[3],result[4],result[5]))  
